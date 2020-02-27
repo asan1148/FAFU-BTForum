@@ -7,6 +7,10 @@ import ffmpy3
 import time
 import threading
 
+# using tkinter for gui
+
+
+# Rename all the files in a dir via delete the unnecessary word.
 
 def rename():
     root_path = file_path
@@ -20,6 +24,8 @@ def rename():
             new_fullname = old_fullname.replace(need_2_del, "")
             os.rename(old_fullname, os.path.join(root_path, new_fullname))
 
+
+# upadte the filename
 
 def refresh_filename():
     path = file_path
@@ -35,6 +41,8 @@ def refresh_filename():
     file_name.set(final_name)
 
 
+# select file
+
 def choose_file(return_position, real_position):
     file = tkinter.filedialog.askopenfilename()
     file = file.replace("/", "\\")
@@ -47,6 +55,8 @@ def choose_file(return_position, real_position):
     final_file = final_file + split[-1]
     return_position.set(final_file)
 
+
+# select directory
 
 def choose_dir(return_position):
     dir_choose = tkinter.filedialog.askdirectory()
@@ -67,6 +77,8 @@ def choose_dir(return_position):
     file_name.set(final_name)
     return_position.set(final_path)
 
+    
+# Starting transcode. And by the way , you should really use at least a list for these path strings....
 
 def start_coding():
     video_list = []
@@ -108,8 +120,12 @@ def start_coding():
         return
     global mission_count
     mission_count = len(video_list)
+    
+    # transcode subtitle is a light mission so i wont use muti-thread
     for item in subtitle_list:
         trans_code_utf8(item)
+     
+    # muti-thread the video transcode mission
     thread_list = []
     threading.Thread(target=bar_status).start()
     for (video, subtitle) in zip(video_list, subtitle_list):
@@ -117,6 +133,8 @@ def start_coding():
     for thread in range(len(thread_list)):
         thread_list[thread].start()
 
+
+# transcode the subtitle file to utf8 
 
 def trans_code_utf8(file):
     coding_status.set("字幕文件转码...")
@@ -132,6 +150,8 @@ def trans_code_utf8(file):
         write_file.write(decoded_str)
         write_file.close()
 
+
+# calling the ffmpeg to do its work
 
 def ffmpeg(video, subtitle):
     print("Video is : " + str(video))
@@ -154,6 +174,8 @@ def ffmpeg(video, subtitle):
     global status_flag
     status_flag = status_flag + 1
 
+
+# gui status bar update
 
 def bar_status():
     clean_line = status_bar_canvas.create_rectangle(1.5, 1.5, 0, 23, width=0, fill="white")
