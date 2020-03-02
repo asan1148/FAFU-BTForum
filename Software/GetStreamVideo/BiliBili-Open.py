@@ -146,6 +146,7 @@ class Window:
             if response_code != 200:
                 continue
             else:
+                self.log_area.insert(tkinter.END, "下载地址为 : " + link + "\n你可以使用potplayer直接看直播或用浏览器打开下载\n")
                 stream_data = requests.get(link, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                                                                         "AppleWebKit/537.36 (KHTML, like Gecko) "
                                                                         "Chrome/80.0.3987.122 Safari/537.36"},
