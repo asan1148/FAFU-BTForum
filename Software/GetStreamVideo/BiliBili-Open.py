@@ -121,6 +121,7 @@ class Window:
                 size = size / 1048576
                 self.log_area.insert(tkinter.END, "<" + str(datetime.datetime.now().strftime("%X")) + "> 已下载 : " + str(
                     round(size, 2)) + "MB\n")
+            
 
     def start(self):
         if len(self.room_id.get()) == 0:
