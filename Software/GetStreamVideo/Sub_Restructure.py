@@ -69,6 +69,7 @@ def remove_unnecessary_part(file_name):
             end_million_sec = None
             print("{}Wrong input, try again!{}".format(colored.fg(1), colored.attr(0)))
             continue
+
     print("{}Removing unnecessary part...{}".format(colored.fg(5), colored.attr(0)))
     start_hour = add_zero(start_hour)
     start_min = add_zero(start_min)
@@ -214,10 +215,6 @@ def restructure_sub(file_name):
             temp_block.append(split_content[index])
     content_block_list.append(temp_block)
     extension = file_name.split(".")[-1]
-    if extension == "srt":
-        un_duplicate_content_list = content_block_list
-        translate_sub(file_name, un_duplicate_content_list)
-        return
     # start check duplication
     # loop to find any duplicated sentence , and try to fix the time axis and the dialog
     finish_flag = 0
@@ -235,6 +232,10 @@ def restructure_sub(file_name):
             current_sentences = current_block[1:]
             # get next block's info
             for forward_index in range(current_index + 1, len(content_block_list)):
+                if duplication_flag == 1:
+                    break
+                if duplication_flag == 0 and forward_index != (current_index + 1):
+                    break
                 if forward_index > len(content_block_list) - 1:
                     break
                 forward_block = content_block_list[forward_index]
@@ -264,10 +265,20 @@ def restructure_sub(file_name):
                     # if we didn't found a duplicated block
                     else:
                         continue
+            if duplication_flag == 0:
+                temp_un_duplicated_block = [content_block_list[current_index][0], content_block_list[current_index][1:]]
+                sentence = temp_un_duplicated_block[1]
+                flag = 0
+                for block in un_duplicate_content_list:
+                    sentence_list = block[1:]
+                    if sentence in sentence_list:
+                        flag = 1
+                        break
+                if flag == 0:
+                    temp_un_duplicated_block = [content_block_list[current_index][0], content_block_list[current_index][1:]]
+                    un_duplicate_content_list.append(temp_un_duplicated_block)
             if current_index == len(content_block_list) - 1:
                 finish_flag = 1
-                temp_un_duplicated_block = [content_block_list[current_index][0], content_block_list[current_index][1:]]
-                un_duplicate_content_list.append(temp_un_duplicated_block)
     write_file = open(file_name, "w", encoding="utf-8")
     block_seq = 1
     for block in un_duplicate_content_list:
