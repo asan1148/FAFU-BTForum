@@ -4,7 +4,7 @@ import colored
 
 def remove_blank(file_name):
     print("{}Removing blank line in case BiliBili can't recognize...{}".format(colored.fg(5), colored.attr(0)))
-    raw_sub_file = open(file_name, "r")
+    raw_sub_file = open(file_name, "r", encoding="utf-8")
     temp_content = ""
     for line in raw_sub_file.readlines():
         if len(line) == 0:
@@ -16,7 +16,7 @@ def remove_blank(file_name):
         else:
             temp_content = temp_content + line
     raw_sub_file.close()
-    write_sub_file = open(file_name, "w")
+    write_sub_file = open(file_name, "w", encoding="utf-8")
     write_sub_file.write(temp_content)
     write_sub_file.close()
 
@@ -80,7 +80,7 @@ def remove_unnecessary_part(file_name):
     end_million_sec = add_zero(end_million_sec)
     start_time = "%s:%s:%s,%s" % (str(start_hour), str(start_min), str(start_sec), str(start_million_sec))
     end_time = "%s:%s:%s,%s" % (str(end_hour), str(end_min), str(end_sec), str(end_million_sec))
-    raw_sub_file = open(file_name, "r")
+    raw_sub_file = open(file_name, "r", encoding="utf-8")
     raw_content = raw_sub_file.read()
     raw_sub_file.close()
     split_list = raw_content.split("\n")
@@ -135,7 +135,7 @@ def remove_unnecessary_part(file_name):
         tail_content = tail_content + sentence + "\n"
     cut_content = head_content + tail_content
     cut_content = cut_content.strip()
-    open(file_name, "w").write(cut_content)
+    open(file_name, "w", encoding="utf-8").write(cut_content)
 
 
 def translate_sub(file_name, content):
@@ -164,13 +164,16 @@ def translate_sub(file_name, content):
         print("{}Next 5 sentences are : {}".format(colored.fg(12), colored.attr(0)))
         for forward_index in range(5):
             if current_index + forward_index > len(content) - 1:
-                print("")
+                print("", end="")
             else:
-                for sentence in content[current_index + forward_index][1]:
-                    print(sentence)
+                if isinstance(content[current_index + forward_index][1], str):
+                    print(content[current_index + forward_index][1])
+                else:
+                    for sentence in content[current_index + forward_index][1]:
+                        print(sentence)
         print("---------------------------------------------------------------------")
 
-        translation = input("Please enter your translation : ").encode("utf-8")
+        translation = input("{}If you don't want to translate this sentence , just press ENTER\n{}".format(colored.fg(22), colored.attr(0)) + "Please enter your translation : ")
         if len(translation) == 0:
             translation = row_sentence
         translated_block = [current_time_axis, translation]
@@ -181,15 +184,16 @@ def translate_sub(file_name, content):
         final_time_axis = block[0]
         final_sentence = block[1]
         write_file.write(str(block_seq) + "\n")
-        write_file.write(final_time_axis)
-        write_file.write(final_sentence.decode("utf-8"))
+        write_file.write(str(final_time_axis) + "\n")
+        write_file.write(final_sentence + "\n")
+        write_file.write("\n")
         block_seq += 1
     write_file.close()
 
 
 def restructure_sub(file_name):
     print("{}Restructuring subtitle...{}".format(colored.fg(5), colored.attr(0)))
-    raw_file = open(file_name, "r")
+    raw_file = open(file_name, "r", encoding="utf-8")
     raw_content = raw_file.read()
     raw_file.close()
     split_content = raw_content.split("\n")
@@ -209,7 +213,11 @@ def restructure_sub(file_name):
         except ValueError:
             temp_block.append(split_content[index])
     content_block_list.append(temp_block)
-
+    extension = file_name.split(".")[-1]
+    if extension == "srt":
+        un_duplicate_content_list = content_block_list
+        translate_sub(file_name, un_duplicate_content_list)
+        return
     # start check duplication
     # loop to find any duplicated sentence , and try to fix the time axis and the dialog
     finish_flag = 0
@@ -260,7 +268,7 @@ def restructure_sub(file_name):
                 finish_flag = 1
                 temp_un_duplicated_block = [content_block_list[current_index][0], content_block_list[current_index][1:]]
                 un_duplicate_content_list.append(temp_un_duplicated_block)
-    write_file = open(file_name, "w")
+    write_file = open(file_name, "w", encoding="utf-8")
     block_seq = 1
     for block in un_duplicate_content_list:
         final_time_axis = block[0] + "\n"
@@ -268,8 +276,8 @@ def restructure_sub(file_name):
         for sentence in block[1]:
             final_sentences = final_sentences + sentence + "\n"
         write_file.write(str(block_seq) + "\n")
-        write_file.write(str(final_time_axis) + "\n")
-        write_file.write(str(final_sentences) + "\n")
+        write_file.write(str(final_time_axis))
+        write_file.write(str(final_sentences))
         block_seq += 1
     write_file.close()
     translate_sub(file_name, un_duplicate_content_list)
@@ -282,7 +290,7 @@ def get_all_file():
     vtt_list = []
     for file_name in file_list:
         file_extension = file_name.split(".")[-1]
-        if file_extension == "vtt":
+        if file_extension == "vtt" or file_extension == "srt":
             vtt_list.append(file_name)
     return vtt_list
 
@@ -291,8 +299,10 @@ def reformat_sub(file_name):
     print("{}Reformatting file from vtt to srt , please wait...{}".format(colored.fg(5), colored.attr(0)))
     old_file_name = file_name
     new_file_name = file_name.replace("vtt", "srt")
-    os.system("ffmpeg -i \"%s\" \"%s\"" % (old_file_name, new_file_name))
-    os.system("del \"%s\"" % old_file_name)
+    old_extension = old_file_name.split(".")[-1]
+    if old_extension == "vtt":
+        os.system("ffmpeg -i \"%s\" \"%s\"" % (old_file_name, new_file_name))
+        os.system("del \"%s\"" % old_file_name)
     return new_file_name
 
 
@@ -326,3 +336,4 @@ if __name__ == '__main__':
     remove_blank(srt_file_name)
     remove_unnecessary_part(srt_file_name)
     restructure_sub(srt_file_name)
+    input("{}Finished all the work , Press ENTER to exit{}".format(colored.fg(11), colored.attr(0)))
