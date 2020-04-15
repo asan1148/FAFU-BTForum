@@ -10,7 +10,6 @@ play_list_url = "https://www.youtube.com/user/TheViperAOC/playlists"
 def get_list():
     list_page = requests.get(play_list_url).text
     list_page_soup = bs(list_page, "lxml")
-    print(list_page_soup)
     play_list = list_page_soup.find_all("h3", {"class": "yt-lockup-title"})
     number = 0
     info_list = []
